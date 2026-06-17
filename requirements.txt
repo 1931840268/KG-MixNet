@@ -1,0 +1,15 @@
+# Core deep-learning stack (tested with Python 3.11, CUDA 12.x)
+torch>=2.0
+torchvision>=0.15
+transformers>=4.40
+sentence-transformers>=2.6
+
+# Scientific / ML utilities
+numpy>=1.24
+pandas>=2.0
+scikit-learn>=1.3
+Pillow>=9.5
+tqdm>=4.65
+
+# Optional: FLOPs / params benchmarking (Table 5). Training runs without it.
+thop>=0.1.1

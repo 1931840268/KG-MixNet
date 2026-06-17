@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Pretrained backbone (download separately, see README)
+models/dinov3-vitl16-pretrain-lvd1689m/
+
+# Datasets (download CoLeaf-DB separately, see README)
+CoLeaf_raw_images/
+*.jpg
+*.jpeg
+*.png
+
+# Training artifacts
+checkpoints*/
+logs*/
+*.pth
+*.ckpt
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Keep the small precomputed class prototypes
+!scripts/class_embeddings.pt
+!scripts/class_embeddings_simple.pt
