@@ -16,10 +16,14 @@ CoLeaf_raw_images/
 *.png
 
 # Training artifacts
-checkpoints*/
+checkpoints_*/
 logs*/
 *.pth
 *.ckpt
+# keep the checkpoints/ instructions, ignore only the weights inside it
+!checkpoints/
+checkpoints/*.pth
+!checkpoints/README.md
 
 # OS / editor
 .DS_Store

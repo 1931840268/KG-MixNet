@@ -106,13 +106,22 @@ accuracy uses the fixed compound set under the **oracle-cardinality** protocol
 (prediction size = ground-truth component count). The best checkpoint per fold is
 selected by H-Mean.
 
+## Pretrained checkpoints
+
+Trained weights are released as **GitHub Release assets** (each checkpoint
+bundles the DINOv3 backbone, ≈1.2 GB, so it cannot live in Git). Download
+`best_fold_1.pth` … `best_fold_5.pth` from the
+[Releases page](https://github.com/1931840268/KG-MixNet/releases) and put them
+in `checkpoints/` (see `checkpoints/README.md`). Re-running `train.py` with the
+fixed seed reproduces equivalent checkpoints from scratch.
+
 ## Non-oracle evaluation (Table 6)
 
 The oracle-cardinality numbers are an **upper bound**. For a deployment-oriented
 estimate, calibrate an adaptive decision rule (no retraining) and grid-search it:
 
 ```bash
-python eval_non_oracle.py --checkpoint checkpoints_KG_MixNet/best_fold_1.pth \
+python eval_non_oracle.py --checkpoint checkpoints/best_fold_1.pth \
                           --data_root /path/to/CoLeaf_raw_images \
                           --dino_path /path/to/dinov3-vitl16
 ```
