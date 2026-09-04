@@ -2,160 +2,135 @@
 
 **Knowledge-Guided Geometric Mixup for Zero-Shot Compound Deficiency Recognition in Coffee Leaves**
 
-This repository contains the official implementation used to produce the results
-in the paper. KG-MixNet recognizes **unseen compound** nutrient deficiencies in
-coffee leaves while training only on **single-deficiency** (and healthy) images,
-formulated as generalized zero-shot learning (GZSL).
+Official implementation. KG-MixNet recognises **unseen compound** nutrient
+deficiencies in coffee leaves while training only on **single-deficiency** and
+healthy images, as a generalized zero-shot learning problem.
 
-The model combines:
-- a **DINOv3 ViT-L/16** visual encoder (only the last two blocks + final norm are fine-tuned);
-- a lightweight **residual bottleneck adapter** (FRA, 1024 → 512 → 1024);
-- **MPNet** semantic prototypes built from a hierarchical **symptom knowledge graph**;
-- a **Multimodal Geometric Mixup (MMG)** branch that synthesizes visual–semantic
-  pairs on the unit hypersphere (linear interpolation + spherical re-projection —
-  a hypersphere-aware approximation, not exact geodesic interpolation);
-- a **dual objective**: seen-class cross-entropy + cosine alignment + KL regularization.
+The method combines a DINOv3 ViT-L/16 encoder with a lightweight residual
+adapter, semantic prototypes built from a structured agronomic symptom corpus
+and encoded once with MPNet, a multimodal geometric mixup branch that
+synthesises visual–semantic pairs on the unit hypersphere, and a dual-constraint
+objective pairing seen-class cross-entropy with cosine alignment and KL
+regularisation.
 
-## Repository structure
+---
+
+## What is in this repository
+
+`train_eval.py` is the pipeline that produced every number reported in the
+paper. It trains one configuration over five folds, records source- and
+target-domain metrics at every epoch, and writes the per-sample class scores to
+disk so that the threshold analyses, bootstrap intervals and figures can be
+recomputed offline without retraining.
 
 ```
-KG-MixNet/
-├── models/
-│   ├── network.py          # KG_MixNet (main model; adapter & freeze flags)
-│   └── baselines.py         # adapted in-house baselines (Table 2)
-├── utils/
-│   ├── taxonomy.py          # symptom knowledge graph (class descriptions)
-│   └── custom_dataset.py    # GZSL dataset (source single-label / target multi-label)
-├── scripts/
-│   ├── build_kg.py          # encode KG descriptions -> class_embeddings.pt (MPNet)
-│   ├── generate_simple_emb.py  # plain class-name prototypes (Table 4 ablation)
-│   ├── data_loader.py       # CoLeaf-DB loading + augmentation
-│   ├── class_embeddings.pt        # precomputed KG prototypes (9 x 768)
-│   └── class_embeddings_simple.pt # precomputed simple-name prototypes (9 x 768)
-├── train.py                 # 5-fold training (main results, Table 1)
-├── eval_non_oracle.py       # practical non-oracle inference analysis (Table 6)
-├── requirements.txt
-└── LICENSE
+train_eval.py                      training and evaluation for every configuration
+knowledge_graph/
+  class_descriptions.py            the nine class records used in the paper
+  make_variants.py                 deterministic perturbations (order, length, contrast)
+  variant_paraphrase.py            the rewritten corpus (wording axis)
+  build_prototypes.py              encode any corpus into the frozen prototype bank
+analysis/
+  dataset_audit.py                 provenance, duplicate and contamination audit
+models/, utils/, scripts/          the original reference implementation
 ```
 
-## Installation
+Every configuration in the paper is registered by name in `EXPERIMENTS` inside
+`train_eval.py`, including the ablations, the mixup-geometry and level variants,
+the reference models, the leave-one-nutrient-out protocol, the description
+perturbations, the class-imbalance schemes and the preprocessing control.
+
+---
+
+## Reproducing the results
+
+**1. Data.** Obtain CoLeaf-DB from the dataset article and place it at
+`data/CoLeaf-DB`, one directory per class plus `more-deficiencies` for the
+compound images. Confirm you hold the same copy:
 
 ```bash
-python -m venv venv && source venv/bin/activate   # (Windows: venv\Scripts\activate)
-pip install -r requirements.txt
+python analysis/dataset_audit.py --root data/CoLeaf-DB
 ```
 
-Tested with Python 3.11, PyTorch 2.x, CUDA 12.x, on a single GPU.
+This prints the per-class counts, the MD5 manifest, the exact-duplicate groups
+and, importantly, whether any compound target image duplicates a seen-class
+image. On the copy used in the paper it does not, which is the condition the
+zero-shot evaluation requires.
 
-## Data and backbone
-
-1. **CoLeaf-DB dataset** (Tuesta-Monteza et al., 2023, *Data in Brief*,
-   DOI: [10.1016/j.dib.2023.109226](https://doi.org/10.1016/j.dib.2023.109226)).
-   Arrange it so the root contains nine single-deficiency / healthy folders plus a
-   compound folder:
-
-   ```
-   CoLeaf_raw_images/
-   ├── boron-B/  calcium-Ca/  iron-Fe/  magnesium-Mg/  manganese-Mn/
-   ├── nitrogen-N/  phosphorus-P/  potassium-K/  healthy/
-   └── more-deficiencies/        # compound images, multi-label parsed from filenames
-   ```
-
-   Compound filenames encode their components, e.g. `B_Ca (1).jpg` → `['B','Ca']`.
-   Point the code at your copy via `--data_root` or the `COLEAF_DATA_ROOT` env var.
-
-2. **DINOv3 ViT-L/16** backbone (`dinov3-vitl16-pretrain-lvd1689m`). Download the
-   weights and pass the folder via `--dino_path` or the `DINOV3_PATH` env var.
-
-> Note: image counts in the paper follow a file-level audit of the local copy
-> (901 seen + 104 unseen compound across 21 combinations). Counts may differ
-> slightly across dataset mirrors.
-
-## Knowledge-graph prototypes
-
-The precomputed prototypes are included under `scripts/`. To regenerate them:
+**2. Prototypes.** Encode the symptom corpus once:
 
 ```bash
-python scripts/build_kg.py            # -> class_embeddings.pt   (KG descriptions)
-python scripts/generate_simple_emb.py # -> class_embeddings_simple.pt (plain names)
+python knowledge_graph/build_prototypes.py --variant kg
+python knowledge_graph/build_prototypes.py --variant simple   # class-name ablation
 ```
 
-## Training (reproducing the paper)
+**3. Backbone.** Download `facebook/dinov3-vitl16-pretrain-lvd1689m` to
+`models/dinov3-vitl16`.
+
+**4. Train.** Each experiment writes `runs/<name>.json` and
+`runs/<name>.scores.npz`:
 
 ```bash
-# Main 5-fold result (Table 1, oracle-cardinality protocol)
-python train.py --data_root /path/to/CoLeaf_raw_images --dino_path /path/to/dinov3-vitl16
-
-# Fixed single-checkpoint protocol used for Tables 2-5 (fold-1)
-python train.py --folds 1
+python train_eval.py --exp abl_full            # the reported model
+python train_eval.py --exp ref_dsecn           # one of the reference models
+python train_eval.py --exp lono_Fe_kg          # iron held out of training
+python train_eval.py --exp P1                  # a whole group at once
 ```
 
-Ablations (Table 3) and design-choice studies (Table 4) reuse the **same** loop;
-each configuration corresponds to a switch the authors toggled:
+Useful flags: `--folds`, `--epochs`, `--lr`, `--seed`, `--workers`,
+`--group-file` for the group-aware split, and `--save-artifacts` for the
+768-dimensional features the figures need.
 
-| Configuration | Command |
-|---|---|
-| Full model | `python train.py` |
-| w/o residual adapter (FRA) | `python train.py --no_adapter` |
-| w/o dual-loss (align + KL off) | `python train.py --lambda_align 0 --lambda_kl 0` |
-| Frozen backbone | `python train.py --freeze_backbone` |
-| Simple class names instead of KG | `python train.py --embeddings simple` |
+**Note on `--workers`.** The value must be the same for every configuration.
+The augmentation draws from the worker random stream, so changing it makes
+configurations incomparable. Set `jobs × workers` to about the number of CPU
+cores actually available to the process, which on a container is the cgroup
+quota rather than what `nproc` reports.
 
-Seen accuracy is evaluated on each fold's held-out 20% split (no leakage); unseen
-accuracy uses the fixed compound set under the **oracle-cardinality** protocol
-(prediction size = ground-truth component count). The best checkpoint per fold is
-selected by H-Mean.
+---
 
-## Pretrained checkpoints
+## Notes on faithfulness
 
-Trained weights are released as **GitHub Release assets** (each checkpoint
-bundles the DINOv3 backbone, ≈1.2 GB, so it cannot live in Git). Download
-`best_fold_1.pth` … `best_fold_5.pth` from the
-[Releases page](https://github.com/1931840268/KG-MixNet/releases) and put them
-in `checkpoints/` (see `checkpoints/README.md`). Re-running `train.py` with the
-fixed seed reproduces equivalent checkpoints from scratch.
+Two implementation details are worth flagging, because both are the kind that
+fail silently.
 
-## Non-oracle evaluation (Table 6)
+**Backbone unfreezing.** The original code located the transformer blocks by
+trying four attribute names and unfroze nothing if none matched, while still
+printing normal parameter counts, losses and metrics. Under `transformers`
+5.14.1 the DINOv3 blocks live at `model.layer` and none of those names matches,
+so the same code degrades to an almost fully frozen backbone with no visible
+symptom. `find_transformer_blocks` adds a version-independent fallback and the
+caller asserts on the block count, so a mismatch raises rather than trains a
+different model.
 
-The oracle-cardinality numbers are an **upper bound**. For a deployment-oriented
-estimate, calibrate an adaptive decision rule (no retraining) and grid-search it:
+**Leave-one-nutrient-out.** The training loss must be restricted to the eight
+seen classes. Left unrestricted, cross-entropy treats the held-out nutrient as a
+negative for every sample, which trains the model never to predict it; a first
+implementation did exactly that and produced top-1 and top-3 rates of zero. That
+is a model trained not to answer, not a model that cannot.
 
-```bash
-python eval_non_oracle.py --checkpoint checkpoints/best_fold_1.pth \
-                          --data_root /path/to/CoLeaf_raw_images \
-                          --dino_path /path/to/dinov3-vitl16
-```
+---
 
-This reports unseen sample-wise F1, seen strict accuracy, and seen false-positive
-rate. These numbers must not be mixed with the oracle-cardinality tables.
+## Availability
 
-## Default hyperparameters
-
-AdamW (head lr 1e-4, backbone lr 1e-6, weight decay 1e-4), cosine annealing
-(T_max = 40, eta_min = 1e-6), batch size 32, 40 epochs, 5-fold `KFold(shuffle=True,
-random_state=42)`. Loss weights: CE 1.0, align 1.0, KL 0.5. MMG: perturb p=0.3
-(σ=0.05), dual-mix p=0.5 (λ ~ Beta(1,1)), identity p=0.2.
-
-## Honest notes on scope
-
-- The comparison baselines in `models/baselines.py` are **adapted in-house**
-  re-implementations on a shared backbone and common protocol, not official
-  reproductions; the comparison is an internal controlled study.
-- The study uses a single, small, imbalanced public benchmark (CoLeaf-DB); the
-  paper reports statistical uncertainty (incl. a Wilson interval for the small
-  unseen set) and does not claim state-of-the-art or field-ready performance.
+The training and evaluation code, the class-description corpus and its
+perturbation generators, and the dataset audit are released here. The saved
+per-sample scores, the fold indices for both split protocols, the grouping
+metadata and the trained checkpoints are available to the editors and reviewers
+on request during review, and will be added to this repository upon
+publication.
 
 ## Citation
 
 ```bibtex
 @article{wang2026kgmixnet,
-  title   = {KG-MixNet: Knowledge-Guided Geometric Mixup for Zero-Shot Compound
-             Deficiency Recognition in Coffee Leaves},
+  title   = {KG-MixNet: Knowledge-Guided Geometric Mixup for Zero-Shot
+             Compound Deficiency Recognition in Coffee Leaves},
   author  = {Wang, Yuqi},
+  journal = {Neural Computing and Applications},
   year    = {2026}
 }
 ```
 
-## License
-
-Released under the MIT License (see `LICENSE`).
+The dataset is CoLeaf-DB (Tuesta-Monteza, Mejia-Cabrera and Arcila-Diaz,
+*Data in Brief*, 2023) and is not redistributed here.

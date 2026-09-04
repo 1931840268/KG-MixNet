@@ -13,3 +13,7 @@ tqdm>=4.65
 
 # Optional: FLOPs / params benchmarking (Table 5). Training runs without it.
 thop>=0.1.1
+
+# Analysis and figures
+scipy>=1.10
+matplotlib>=3.7

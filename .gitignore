@@ -33,3 +33,10 @@ checkpoints/*.pth
 # Keep the small precomputed class prototypes
 !scripts/class_embeddings.pt
 !scripts/class_embeddings_simple.pt
+
+# Run outputs (scores, per-epoch metrics) and generated corpora
+runs/
+prototypes/
+knowledge_graph/out/
+data/
+dataset_audit.json
