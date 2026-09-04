@@ -715,9 +715,10 @@ def train_one_fold(args, mcfg: ModelCfg, fold, tr_idx, va_idx, s_imgs, s_labels,
     # Under leave-one-nutrient-out the training loss must be restricted to the
     # eight seen classes. Otherwise cross-entropy treats the held-out class as a
     # negative for every sample, which explicitly trains the model never to
-    # predict it. A first implementation did exactly that and produced top-1 and
-    # top-3 rates of zero for the held-out nutrient; that is not a failure to
-    # recognise it but a model trained not to. With the loss restricted, the
+    # predict it and drives its top-1 and top-3 rates to zero. That is not a
+    # failure to recognise the nutrient but a model trained not to answer, and
+    # it is easy to miss because nothing else about the run looks wrong. With
+    # the loss restricted, the
     # held-out prototype receives no gradient and keeps the position the
     # knowledge graph gives it, and testing scores against all nine prototypes.
     # This is the standard GZSL construction.

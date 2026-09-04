@@ -1,0 +1,73 @@
+{
+ "dataset": {
+  "name": "CoLeaf-DB",
+  "reference": "Tuesta-Monteza, Mejia-Cabrera, Arcila-Diaz. CoLeaf-DB: Peruvian coffee leaf images dataset for coffee leaf nutritional deficiencies detection and classification. Data in Brief, 2023.",
+  "repository": "Mendeley Data",
+  "dataset_id": "brfgw46wzb",
+  "landing_page": "https://data.mendeley.com/datasets/brfgw46wzb"
+ },
+ "what_this_file_is": "The exact archives the working copy was obtained from, with the SHA-256 published by the repository. Every archive below was re-hashed locally and matched, so the copy behind the reported results is the published release and not a re-encoded derivative.",
+ "verified": "all 10 archives matched (sha256sum -c)",
+ "archives": [
+  {
+   "filename": "boron-B.zip",
+   "url": "https://data.mendeley.com/public-files/datasets/brfgw46wzb/files/c8787222-c731-4608-95e1-c1c481ba4cde/file_downloaded",
+   "size_bytes": 186714966,
+   "sha256": "45fdcd2e271accf728ba83bd1628a3cf518d4d28b75c7e6d315c04a989d6d121"
+  },
+  {
+   "filename": "calcium-Ca.zip",
+   "url": "https://data.mendeley.com/public-files/datasets/brfgw46wzb/files/6bab8e2e-3ccb-4611-9950-1daaed90707a/file_downloaded",
+   "size_bytes": 321785132,
+   "sha256": "cdd32dadead0fa77363cfa1f05da6dcc4bda8527f6825bb8a301a2ad1bbdb182"
+  },
+  {
+   "filename": "healthy.zip",
+   "url": "https://data.mendeley.com/public-files/datasets/brfgw46wzb/files/b220d2f4-8c02-429a-96c1-059923c1fd90/file_downloaded",
+   "size_bytes": 11178182,
+   "sha256": "d75af50abc00ab515f688c6c19535b8738fbe2b6705490efae037daa284dd2dc"
+  },
+  {
+   "filename": "iron-Fe.zip",
+   "url": "https://data.mendeley.com/public-files/datasets/brfgw46wzb/files/a2684886-e7c7-4acc-adc5-56da5ceb0937/file_downloaded",
+   "size_bytes": 137875321,
+   "sha256": "e498623141056b60c769971b0e1d21a85536995733be5c3150d84db88d48be05"
+  },
+  {
+   "filename": "magnesium-Mg.zip",
+   "url": "https://data.mendeley.com/public-files/datasets/brfgw46wzb/files/578efbbf-1e03-40ce-b18c-80ca9655ac01/file_downloaded",
+   "size_bytes": 184900756,
+   "sha256": "76a60fa8665427855ed5c8ee3454d093ceeae2009710cac3d5808783a7db024b"
+  },
+  {
+   "filename": "manganese-Mn.zip",
+   "url": "https://data.mendeley.com/public-files/datasets/brfgw46wzb/files/cf1a3235-b0cf-4846-ba78-dd85602cfca7/file_downloaded",
+   "size_bytes": 206554169,
+   "sha256": "6ce4338b390b502a81c94906261a20721229d39375937e5e79fb7ea658b6f26f"
+  },
+  {
+   "filename": "more-deficiencies.zip",
+   "url": "https://data.mendeley.com/public-files/datasets/brfgw46wzb/files/53de46a2-b43a-47b4-86ab-90841b180449/file_downloaded",
+   "size_bytes": 252725783,
+   "sha256": "b594bae60eb439813bb47af06307e1b45e5f2e622382256d20340b8899891579"
+  },
+  {
+   "filename": "nitrogen-N.zip",
+   "url": "https://data.mendeley.com/public-files/datasets/brfgw46wzb/files/3d5a9c99-0444-40e4-8c17-8340bf365512/file_downloaded",
+   "size_bytes": 155553075,
+   "sha256": "a07226d40ae5a9ed14e9f6f824be9719e995d063bf1637e3112f3a75306600bb"
+  },
+  {
+   "filename": "phosphorus-P.zip",
+   "url": "https://data.mendeley.com/public-files/datasets/brfgw46wzb/files/1e4cf6ca-c7a1-4edd-b073-b7b0ccfa41c1/file_downloaded",
+   "size_bytes": 388135476,
+   "sha256": "b348185b75ea69b7a55c8a9873a8d40402a9d717368ef76441fd1f00595eda0a"
+  },
+  {
+   "filename": "potasium-K.zip",
+   "url": "https://data.mendeley.com/public-files/datasets/brfgw46wzb/files/9e65665a-179b-4ecc-839e-751bcbaab143/file_downloaded",
+   "size_bytes": 215598183,
+   "sha256": "f9fb626229aacd459737005bdba8d3263dea427a737bc127530fb654ede81ea2"
+  }
+ ]
+}

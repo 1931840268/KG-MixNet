@@ -32,6 +32,12 @@ knowledge_graph/
   build_prototypes.py              encode any corpus into the frozen prototype bank
 analysis/
   dataset_audit.py                 provenance, duplicate and contamination audit
+provenance/
+  archive_sha256.json              the ten source archives, with verified SHA-256
+  image_md5_manifest.json          MD5 of all 1006 images, counts, duplicate audit
+  folds_random.json                validation folds, random protocol
+  folds_group.json                 validation folds, group-aware protocol
+  capture_groups.json              capture session of each seen image
 models/, utils/, scripts/          the original reference implementation
 ```
 
@@ -55,7 +61,10 @@ python analysis/dataset_audit.py --root data/CoLeaf-DB
 This prints the per-class counts, the MD5 manifest, the exact-duplicate groups
 and, importantly, whether any compound target image duplicates a seen-class
 image. On the copy used in the paper it does not, which is the condition the
-zero-shot evaluation requires.
+zero-shot evaluation requires. Compare the output against
+`provenance/image_md5_manifest.json` and `provenance/archive_sha256.json`, which
+record our copy image by image and archive by archive; see
+[`provenance/README.md`](provenance/README.md).
 
 **2. Prototypes.** Encode the symptom corpus once:
 
@@ -105,20 +114,25 @@ different model.
 
 **Leave-one-nutrient-out.** The training loss must be restricted to the eight
 seen classes. Left unrestricted, cross-entropy treats the held-out nutrient as a
-negative for every sample, which trains the model never to predict it; a first
-implementation did exactly that and produced top-1 and top-3 rates of zero. That
-is a model trained not to answer, not a model that cannot.
+negative for every sample, which trains the model never to predict it and drives
+its top-1 and top-3 rates to zero. That measures a model trained not to answer,
+not a model that cannot. `train_eval.py` therefore computes the training loss
+over the eight seen columns only, so the held-out prototype receives no gradient
+and keeps the position the knowledge graph gives it, while evaluation still
+scores against all nine. This is the standard GZSL construction.
 
 ---
 
 ## Availability
 
 The training and evaluation code, the class-description corpus and its
-perturbation generators, and the dataset audit are released here. The saved
-per-sample scores, the fold indices for both split protocols, the grouping
-metadata and the trained checkpoints are available to the editors and reviewers
-on request during review, and will be added to this repository upon
-publication.
+perturbation generators, the dataset audit, and the full provenance record —
+archive hashes, the per-image MD5 manifest, the fold indices for both split
+protocols and the capture-session grouping — are released here. Together they
+reproduce the reported numbers from the public dataset without any further
+material from us. The saved per-sample scores and the trained checkpoints are
+available to the editors and reviewers on request during review, and will be
+added to this repository upon publication.
 
 ## Citation
 
